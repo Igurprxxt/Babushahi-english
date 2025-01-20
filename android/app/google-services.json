@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "608266318435",
+    "firebase_url": "https://babushahi-english.firebaseio.com",
+    "project_id": "babushahi-english",
+    "storage_bucket": "babushahi-english.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608266318435:android:3f51e858e1e2450146fe56",
+        "android_client_info": {
+          "package_name": "com.babushahi.english"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "608266318435-tj6ae7i63spab9rfiq4bb16j46avg758.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBSsGZOBEZEJ7j3ZdBax-eUoc34iYcBg2Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "608266318435-tj6ae7i63spab9rfiq4bb16j46avg758.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
