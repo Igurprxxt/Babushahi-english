@@ -1,46 +1,60 @@
-// This Screen will be shown when a user want to read full news in the app.
-
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
 import 'home.dart';
 
-class FullNews extends StatelessWidget {
+class FullNews extends StatefulWidget {
   const FullNews({super.key, required this.url, required this.isNotification});
   final String url;
   final bool isNotification;
 
   @override
-  Widget build(BuildContext context) {
-    _launchURL(Uri url) async {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
-      } else {
-        throw 'Could not launch $url';
-      }
-    }
+  State<FullNews> createState() => _FullNewsState();
+}
 
-    final _controller = WebViewController()
+class _FullNewsState extends State<FullNews> {
+  late final WebViewController _controller;
+  bool _isLoading = true; // Track loading state
+  Timer? _loadingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
           onPageStarted: (String url) {
-            print('init ' + url);
+            setState(() {
+              _isLoading = true;
+            });
+            // Start a timer to handle cases where onPageFinished isn't called quickly.
+            _loadingTimer?.cancel();
+            _loadingTimer = Timer(Duration(seconds: 10), () {
+              if (_isLoading) {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+            });
           },
           onPageFinished: (String url) {
             print('finished ' + url);
+            _loadingTimer?.cancel(); // Cancel timer if page finishes first
+
+            // Add a small delay to give time for resources to load
+            Future.delayed(Duration(milliseconds: 100), () {
+              if (_isLoading) {
+                setState(() {
+                  _isLoading = false;
+                });
+              }
+            });
           },
           onNavigationRequest: (NavigationRequest request) {
-            // prevent navigation to youtube
-            // if (request.url.startsWith('https://www.youtube.com/')) {
-            //   return NavigationDecision.prevent;
-            // }
-            // For whatsapp launch it as a external application
             print("request url" + request.url.toString());
 
             if (request.url.startsWith('whatsapp')) {
@@ -51,9 +65,7 @@ class FullNews extends StatelessWidget {
                   urlSplitted.last.toString().replaceAll("%20", " ");
               _launchURL(Uri.parse("https://wa.me/?text=$message"));
               return NavigationDecision.prevent;
-            }
-            // Also launch url for twitter
-            else if (request.url.startsWith('https://twitter.com/')) {
+            } else if (request.url.startsWith('https://twitter.com/')) {
               print('blocking navigation to $request}');
               _launchURL(Uri.parse(request.url));
               return NavigationDecision.prevent;
@@ -63,10 +75,33 @@ class FullNews extends StatelessWidget {
           },
           onWebResourceError: (WebResourceError error) {
             print('error aa gai' + error.description);
+            if (_isLoading) {
+              setState(() {
+                _isLoading = false;
+              });
+            }
           },
         ),
       )
-      ..loadRequest(Uri.parse(url));
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  void dispose() {
+    _loadingTimer?.cancel();
+    super.dispose();
+  }
+
+  _launchURL(Uri url) async {
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
@@ -77,7 +112,7 @@ class FullNews extends StatelessWidget {
               color: Colors.black,
             ),
             onPressed: () {
-              if (isNotification) {
+              if (widget.isNotification) {
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -90,7 +125,18 @@ class FullNews extends StatelessWidget {
             },
           ),
         ),
-        body: WebViewWidget(controller: _controller),
+        body: Stack(
+          children: [
+            WebViewWidget(controller: _controller),
+            if (_isLoading)
+              Container(
+                color: Colors.white.withOpacity(0.7),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
