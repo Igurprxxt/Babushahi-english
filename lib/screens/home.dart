@@ -1,5 +1,7 @@
 // This is the main page where the user can see the news feed.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../DataStore/category_cache.dart';
@@ -37,6 +39,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   // bool showSearchResults = false;
 
   Future<void> _openSocials(String url) async {
+    final Uri uri = Uri.parse(url);
+    if (!await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw Exception('Could not launch $url');
+    }
+  }
+
+  void _launchAppStore() async {
+    final String url = Platform.isAndroid
+        ? 'https://www.play.google.com/store/apps/details?id=com.babushahi.english&hl=en'
+        : 'https://www.apps.apple.com/in/app/babushahi-english/id1242727658';
     final Uri uri = Uri.parse(url);
     if (!await launchUrl(
       uri,
@@ -164,9 +179,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      // TODO: Add link to Babushahi Punjabi app
-                    },
+                    onTap: _launchAppStore,
                     child: Image.asset(
                       'assets/images/babushahi-icon-punjabi.png',
                       height: 40,
