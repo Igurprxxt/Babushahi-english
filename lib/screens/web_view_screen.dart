@@ -94,6 +94,7 @@ class _FullNewsState extends State<FullNews> {
 
   _launchURL(Uri url) async {
     if (await canLaunchUrl(url)) {
+      print(url);
       await launchUrl(url, mode: LaunchMode.externalApplication);
     } else {
       throw 'Could not launch $url';
